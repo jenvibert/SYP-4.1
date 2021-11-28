@@ -310,10 +310,11 @@ void loop()
         long fingertipSensor = capValues[1][2];
 
         
-        // motor power
-        float pwr = abs(forearmSensor-(fingertipSensor+800));
+        //motor power
+        long sensordiff = abs(forearmSensor-(fingertipSensor+800));
+        long pwr = map(sensordiff, 20, 20000, 0 , 255);
         if(pwr>255){
-           pwr=255;
+          pwr=255;
         }
        
         // motor direction
@@ -340,6 +341,14 @@ void loop()
         Serial.println();
         Serial.print("Fingertip: ");
         Serial.print(fingertipSensor+800);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Power: ");
+        Serial.print(pwr);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Sensor Diff: ");
+        Serial.print(sensordiff);
         Serial.print(" ");
         Serial.println();
 
