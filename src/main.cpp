@@ -316,7 +316,7 @@ void loop()
         // motor direction
 
         int dir=0;
-        if ((forearmSensor <= ( fingertipSensor + 5)) && (forearmSensor >= (fingertipSensor - 5))){
+        if ((forearmSensor <= ( fingertipSensor + 2000)) && (forearmSensor >= (fingertipSensor - 2000))){
             dir=0;
             pwr=0;
         }
