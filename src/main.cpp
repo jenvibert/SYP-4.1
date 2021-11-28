@@ -311,7 +311,10 @@ void loop()
 
         
         // motor power
-        float pwr = 255;
+        float pwr = abs(forearmSensor-(fingertipSensor+800));
+        if(pwr>255){
+           pwr=255;
+        }
        
         // motor direction
 
@@ -323,7 +326,7 @@ void loop()
         else if (forearmSensor<(fingertipSensor+800)){
             dir=1;
         }
-        else if (forearmSensor>(fingertipSensor+800)){
+        else if (forearmSensor>( fingertipSensor+800)){
             dir=-1;
         }
       
