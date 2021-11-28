@@ -316,26 +316,27 @@ void loop()
         // motor direction
 
         int dir=0;
-        if ((forearmSensor <= ( fingertipSensor + 2000)) && (forearmSensor >= (fingertipSensor - 2000))){
+        if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){
             dir=0;
             pwr=0;
         }
-        else if (forearmSensor<fingertipSensor){
+        else if (forearmSensor<(fingertipSensor+800)){
             dir=1;
         }
-        else if (forearmSensor>fingertipSensor){
+        else if (forearmSensor>(fingertipSensor+800)){
             dir=-1;
         }
       
         // signal the motor
         setMotor(dir,pwr,PWM,IN1,IN2);
-              
 
         // store previous error
+        Serial.print("Forearm: ");
         Serial.print(forearmSensor);
         Serial.print(" ");
         Serial.println();
-        Serial.print(fingertipSensor);
+        Serial.print("Fingertip: ");
+        Serial.print(fingertipSensor+800);
         Serial.print(" ");
         Serial.println();
 
