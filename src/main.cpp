@@ -316,18 +316,17 @@ void loop()
         // motor direction
 
         int dir=0;
-
-       /* if ((armforce <= ( fingertip + 5)) && (armforce >= (fingertip - 5))){
+        if ((forearmSensor <= ( fingertipSensor + 5)) && (forearmSensor >= (fingertipSensor - 5))){
             dir=0;
             pwr=0;
         }
-        else if (armforce<fingertip){
+        else if (forearmSensor<fingertipSensor){
             dir=1;
         }
-        else if (armforce>fingertip){
+        else if (forearmSensor>fingertipSensor){
             dir=-1;
         }
-      */
+      
         // signal the motor
         setMotor(dir,pwr,PWM,IN1,IN2);
               
