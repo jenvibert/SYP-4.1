@@ -299,22 +299,24 @@ void loop()
         capValues[i][2] = cap; 
         capValues[i][0] = addr; 
         capValues[i][1] = 0;
-
-
     }
+
         long forearmSensor = capValues[0][2]; //retrieving capacitor value from the first array
         long fingertipSensor = capValues[1][2];//retrieving capacitor value from second array
 
+        //motor power option 1 (with variable speed)
+        // long sensordiff = abs(forearmSensor-(fingertipSensor+800));
+        //long pwr = map(sensordiff, 20, 20000, 0 , 255);
+        //if(pwr>255){
+        //  pwr=255;
+        //}
         
-        // motor power
-        float pwr = abs(forearmSensor-(fingertipSensor+800)); //Due to unequal "zero" values for the sensor +800 is added to the fingertip to equalize the values when there's no force applied
-           if(pwr>255){
-           pwr=255;
-        }
+        //motor power option 2 (always set at max speed)
+         long pwr=255;
        
         // motor direction
         int dir=0;
-        if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){
+        if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){ 
             dir=0;
             pwr=0;
         }
@@ -335,6 +337,14 @@ void loop()
         Serial.println();
         Serial.print("Fingertip: ");
         Serial.print(fingertipSensor+800);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Power: ");
+        Serial.print(pwr);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Sensor Diff: ");
+        Serial.print(sensordiff);
         Serial.print(" ");
         Serial.println();
 
