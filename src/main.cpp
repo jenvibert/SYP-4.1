@@ -33,11 +33,9 @@ FDC1004 FDC;
 int sensorCount = 0;
 
 // make a global array of cap values that are just updated for each loop iteration (otherwise need to create arrays each loop iteration
-
 float capValues[24][3] = {0};
 
 // get time
-
 time_t getTeensy3Time()
 {
   return Teensy3Clock.get();
@@ -82,7 +80,6 @@ float getReadingFromFDCwithAddressAndBus(TwoWire &bus, int addr, int capdac, int
 }
 
 // I2C Scanner to retrieve all device ids
- 
 int I2Cscanner(TwoWire &I2CBus, int busID)
 {
  byte error, address;
@@ -131,7 +128,6 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
 }
 
 // method to handle input
-
 bool handleInput()
 {
   while (Serial.available() > 0)
@@ -156,7 +152,7 @@ bool handleInput()
   return false;
 }
 
-void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
+void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){ //setting up motor
   analogWrite(pwm,pwmVal);
   if(dir == 1){
     digitalWrite(in1,HIGH);
@@ -234,8 +230,8 @@ void setup() {
       deviceArray[j][1] = 0;
     }
 
-    int sensorsBusOne = I2Cscanner(Wire, 0);
-    int sensorsBusTwo = I2Cscanner(Wire, 1);
+    int sensorsBusOne = I2Cscanner(Wire, 0); //setting up first bus for I2C
+    int sensorsBusTwo = I2Cscanner(Wire, 1); //setting up second bus for I2C
     numberOfSensors = sensorsBusOne + sensorsBusTwo;
     sensorCount = numberOfSensors; // store number of sensors detected in a global variable so you dont have to keep counting number of sensors in main loop (per previous code)
     Serial.println(sensorCount);
@@ -300,24 +296,23 @@ void loop()
           cap = getReadingFromFDCwithAddressAndBus(Wire1, addr, capdac, i);
 
 
-        capValues[i][2] = cap;
-        capValues[i][0] = addr;
+        capValues[i][2] = cap; 
+        capValues[i][0] = addr; 
         capValues[i][1] = 0;
 
 
     }
-        long forearmSensor = capValues[0][2];
-        long fingertipSensor = capValues[1][2];
+        long forearmSensor = capValues[0][2]; //retrieving capacitor value from the first array
+        long fingertipSensor = capValues[1][2];//retrieving capacitor value from second array
 
         
         // motor power
-        float pwr = abs(forearmSensor-(fingertipSensor+800));
-        if(pwr>255){
+        float pwr = abs(forearmSensor-(fingertipSensor+800)); //Due to unequal "zero" values for the sensor +800 is added to the fingertip to equalize the values when there's no force applied
+           if(pwr>255){
            pwr=255;
         }
        
         // motor direction
-
         int dir=0;
         if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){
             dir=0;
