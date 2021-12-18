@@ -343,9 +343,6 @@ void loop()
         // control signal
         float u = kp*e + kd*dedt + ki*eintegral;
 
-        // motor power
-        float pwr = 255;
-
         // motor direction
         int dir = 1;
         if(u<0){
