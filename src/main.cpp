@@ -310,12 +310,50 @@ void loop()
         //if(pwr>255){
         //  pwr=255;
         //}
+
+        // PID constants
+        float kp = 1;
+        float kd = 0.025;
+        float ki = 0.0;
+
+        // time difference
+        long currT = micros();
+        float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+        prevT = currT;
         
+       int forearmsensormapped= map(forearmSensor,15000,55000,0,180);
+
+        int unmappedpos = 0; 
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        unmappedpos = posi;
+        }
         //motor power option 2 (always set at max speed)
          long pwr=255;
-       
+
+         
+         int pos = map(unmappedpos,0,2527,0,180);
+        
+        int e = forearmsensormapped - pos;
+        // derivative
+        float dedt = (e-eprev)/(deltaT);
+
+        // integral
+        eintegral = eintegral + e*deltaT;
+
+        // control signal
+        float u = kp*e + kd*dedt + ki*eintegral;
+
+        // motor power
+        float pwr = 255;
+
         // motor direction
-        int dir=0;
+        int dir = 1;
+        if(u<0){
+          dir = -1;
+        }
+
+        //motor direction
+        /*int dir=0;
         if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){ 
             dir=0;
             pwr=0;
@@ -326,7 +364,10 @@ void loop()
         else if (forearmSensor>( fingertipSensor+800)){
             dir=-1;
         }
-      
+      */
+
+        // store previous error
+        eprev = e;
         // signal the motor
         setMotor(dir,pwr,PWM,IN1,IN2);
 
@@ -343,8 +384,8 @@ void loop()
         Serial.print(pwr);
         Serial.print(" ");
         Serial.println();
-        Serial.print("Sensor Diff: ");
-        Serial.print(sensordiff);
+      //  Serial.print("Sensor Diff: ");
+      //  Serial.print(sensordiff);
         Serial.print(" ");
         Serial.println();
 
