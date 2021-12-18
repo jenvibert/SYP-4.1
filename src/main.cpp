@@ -330,7 +330,7 @@ void loop()
         //motor power option 2 (always set at max speed)
          long pwr=255;
 
-         
+
          int pos = map(unmappedpos,0,2527,0,180);
         
         int e = forearmsensormapped - pos;
@@ -373,11 +373,14 @@ void loop()
 
         // store previous error
         Serial.print("Forearm: ");
-        Serial.print(forearmSensor);
+        //Serial.print(forearmSensor);
+        Serial.print(forearmsensormapped);
         Serial.print(" ");
         Serial.println();
-        Serial.print("Fingertip: ");
-        Serial.print(fingertipSensor+800);
+       // Serial.print("Fingertip: ");
+       // Serial.print(fingertipSensor+800);
+        Serial.print("Position: ");
+        Serial.print(pos);
         Serial.print(" ");
         Serial.println();
         Serial.print("Power: ");
