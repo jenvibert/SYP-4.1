@@ -308,14 +308,9 @@ void loop()
         //  pwr=255;
         //}
 
-        // PID constants
-        float kp = 1;
-        float kd = 0.025;
-        float ki = 0.0;
 
         // time difference
         long currT = micros();
-        float deltaT = ((float) (currT - prevT))/( 1.0e6 );
         prevT = currT;
         
        int forearmsensormapped = map(forearmSensor,15000,55000,0,180);
@@ -330,38 +325,19 @@ void loop()
 
          int pos = map(unmappedpos,0,2527,0,180);
         
-        int e = forearmsensormapped - pos;
-        // derivative
-        float dedt = (e-eprev)/(deltaT);
-
-        // integral
-        eintegral = eintegral + e*deltaT;
-
-        // control signal
-        float u = kp*e + kd*dedt + ki*eintegral;
-
-        // motor direction
-        int dir = 1;
-        if(u<0){
-          dir = -1;
+        
+        int dir=0;
+         if ((pos <= (forearmsensormapped + 10)) && (pos >= (forearmsensormapped) - 10)){
+          dir=0;
+          pwr=0;
+          }
+        else if (pos<forearmsensormapped){
+          dir=-1;
+        }
+        else if (pos>forearmsensormapped){
+         dir=1;
         }
 
-        //motor direction
-        /*int dir=0;
-        if ((forearmSensor <= ( (fingertipSensor+800) + 500)) && (forearmSensor >= ((fingertipSensor+800) - 500))){ 
-            dir=0;
-            pwr=0;
-        }
-        else if (forearmSensor<(fingertipSensor+800)){
-            dir=1;
-        }
-        else if (forearmSensor>( fingertipSensor+800)){
-            dir=-1;
-        }
-      */
-
-        // store previous error
-        eprev = e;
         // signal the motor
         setMotor(dir,pwr,PWM,IN1,IN2);
 
@@ -384,8 +360,8 @@ void loop()
         Serial.print(pos);
         Serial.print(" ");
         Serial.println();
-        Serial.print("Power: ");
-        Serial.print(pwr);
+        Serial.print("direction: ");
+        Serial.print(dir);
         Serial.print(" ");
         Serial.println();
       //  Serial.print("Sensor Diff: ");
