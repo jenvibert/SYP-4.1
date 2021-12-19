@@ -2,6 +2,8 @@
 #include "FDC1004.h"
 #include <Wire.h>
 #include <util/atomic.h> // For the ATOMIC_BLOCK macro
+#include <ctime>
+using namespace std;
 
 
 #define ENCA 21 // YELLOW
@@ -241,11 +243,8 @@ void setup() {
     
   }
 
-  
-
   digitalWrite(led, HIGH); // set Led high to show that setup complete
   
-
   for (int x=0; x<24; x++){
     Serial.print("i2c address: ");
     Serial.println(deviceArray[x][0]);
@@ -260,8 +259,6 @@ void setup() {
 
 void loop() 
 {
-
-  
       // data collection part: sample the sensors, and print them in the necessary key val format to the serial port
 
       for (int i = 0; i < sensorCount; i++)
@@ -321,7 +318,8 @@ void loop()
         float deltaT = ((float) (currT - prevT))/( 1.0e6 );
         prevT = currT;
         
-       int forearmsensormapped= map(forearmSensor,15000,55000,0,180);
+       int forearmsensormapped = map(forearmSensor,15000,55000,0,180);
+       int fingertipsensormapped = map(fingertipSensor, 15000, 55000, 0, 180);
 
         int unmappedpos = 0; 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -329,7 +327,6 @@ void loop()
         }
         //motor power option 2 (always set at max speed)
          long pwr=255;
-
 
          int pos = map(unmappedpos,0,2527,0,180);
         
@@ -369,9 +366,16 @@ void loop()
         setMotor(dir,pwr,PWM,IN1,IN2);
 
         // store previous error
+        Serial.print("Time: ");
+        Serial.print(millis());
+        Serial.println();
         Serial.print("Forearm: ");
         //Serial.print(forearmSensor);
         Serial.print(forearmsensormapped);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Fingertip: ");
+        Serial.print(fingertipsensormapped);
         Serial.print(" ");
         Serial.println();
        // Serial.print("Fingertip: ");
