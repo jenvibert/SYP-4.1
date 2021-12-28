@@ -269,11 +269,12 @@ void loop()
         int bus = deviceArray[i][1];
         int capdac = deviceArray[i][2]; // get the capdac value
 
-        if (bus ==0)
+        if (bus == 0)
           configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac, i);
-        else if (bus ==1)
+        else if (bus == 1)
           configureMeasurementonFDCwithAddressAndBus(Wire1, addr, capdac, i);
-
+        else if (bus == 2)
+          configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac, i);
       }
 
       delay(3); // delay 3 ms to let FDC capture data
@@ -292,7 +293,8 @@ void loop()
           cap = getReadingFromFDCwithAddressAndBus(Wire, addr, capdac, i);
         else if (bus ==1)
           cap = getReadingFromFDCwithAddressAndBus(Wire1, addr, capdac, i);
-
+        else if (bus == 2)
+          configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac, i);
 
         capValues[i][2] = cap; 
         capValues[i][0] = addr; 
