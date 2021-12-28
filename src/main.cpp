@@ -234,7 +234,9 @@ void setup() {
 
     int sensorsBusOne = I2Cscanner(Wire, 0); //setting up first bus for I2C
     int sensorsBusTwo = I2Cscanner(Wire, 1); //setting up second bus for I2C
-    numberOfSensors = sensorsBusOne + sensorsBusTwo;
+    int sensorBusThree = I2Cscanner(Wire, 2);
+
+    numberOfSensors = sensorsBusOne + sensorsBusTwo + sensorBusThree;
     sensorCount = numberOfSensors; // store number of sensors detected in a global variable so you dont have to keep counting number of sensors in main loop (per previous code)
     Serial.println(sensorCount);
     // when at least one sensor is detected, break the loop. If no sensors detected, try to scan again until sensors are detected. (i.e. if unknown error occurs)
@@ -298,8 +300,10 @@ void loop()
         capValues[i][1] = 0;
     }
 
-        long forearmSensor = capValues[0][2]; //retrieving capacitor value from the first array
+        long forearmtopSensor = capValues[0][2]; //retrieving capacitor value from the first array
         long fingertipSensor = capValues[1][2];//retrieving capacitor value from second array
+        long forearmbottomSensor = capValues[2][2];
+
 
         //motor power option 1 (with variable speed)
         // long sensordiff = abs(forearmSensor-(fingertipSensor+800));
@@ -313,13 +317,17 @@ void loop()
         long currT = micros();
         prevT = currT;
         
-       int forearmsensormapped = map(forearmSensor,15000,55000,0,180);
+        //mapped variables
+       int forearmtopsensormapped = map(forearmtopSensor,15000,55000,0,180);
        int fingertipsensormapped = map(fingertipSensor, 15000, 55000, 0, 180);
+       int forearmbottomsensormapped = map(forearmbottomSensor,15000,55000,0,180);
+       int forcesum = forearmtopsensormapped - (forearmbottomsensormapped + fingertipsensormapped);
 
         int unmappedpos = 0; 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         unmappedpos = posi;
         }
+        
         //motor power option 2 (always set at max speed)
          long pwr=255;
 
@@ -327,14 +335,14 @@ void loop()
         
         
         int dir=0;
-         if ((pos <= (forearmsensormapped + 10)) && (pos >= (forearmsensormapped) - 10)){
+         if ((pos <= (forcesum + 10)) && (pos >= (forcesum - 10))){
           dir=0;
           pwr=0;
           }
-        else if (pos<forearmsensormapped){
+        else if (pos<forcesum){
           dir=-1;
         }
-        else if (pos>forearmsensormapped){
+        else if (pos>forcesum){
          dir=1;
         }
 
@@ -345,27 +353,30 @@ void loop()
         Serial.print("Time: ");
         Serial.print(millis());
         Serial.println();
-        Serial.print("Forearm: ");
-        //Serial.print(forearmSensor);
-        Serial.print(forearmsensormapped);
+        Serial.print("Top of Forearm: ");
+        Serial.print(forearmtopsensormapped);
+        Serial.print(" ");
+        Serial.println();
+        Serial.print("Bottom of Forearm: ");
+        Serial.print(forearmbottomsensormapped);
         Serial.print(" ");
         Serial.println();
         Serial.print("Fingertip: ");
         Serial.print(fingertipsensormapped);
         Serial.print(" ");
         Serial.println();
-       // Serial.print("Fingertip: ");
-       // Serial.print(fingertipSensor+800);
+        Serial.print("Sum of Forces: ");
+        Serial.print(forcesum);
+        Serial.print(" ");
+        Serial.println();
         Serial.print("Position: ");
         Serial.print(pos);
         Serial.print(" ");
         Serial.println();
-        Serial.print("direction: ");
+        Serial.print("Direction: ");
         Serial.print(dir);
         Serial.print(" ");
         Serial.println();
-      //  Serial.print("Sensor Diff: ");
-      //  Serial.print(sensordiff);
         Serial.print(" ");
         Serial.println();
 
