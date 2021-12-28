@@ -204,9 +204,11 @@ void setup() {
   // I2C Bus init
   Wire.begin();
   Wire1.begin();
+  Wire2.begin();
 
   Wire.setClock(400000);
   Wire1.setClock(400000);
+  Wire2.setClock(400000);
 
   delay(500);
 
@@ -294,8 +296,8 @@ void loop()
         else if (bus ==1)
           cap = getReadingFromFDCwithAddressAndBus(Wire1, addr, capdac, i);
         else if (bus == 2)
-          configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac, i);
-
+          cap=getReadingFromFDCwithAddressAndBus(Wire2, addr, capdac, i);
+          
         capValues[i][2] = cap; 
         capValues[i][0] = addr; 
         capValues[i][1] = 0;
@@ -322,7 +324,7 @@ void loop()
        int forearmtopsensormapped = map(forearmtopSensor,15000,55000,0,180);
        int fingertipsensormapped = map(fingertipSensor, 15000, 55000, 0, 180);
        int forearmbottomsensormapped = map(forearmbottomSensor,15000,55000,0,180);
-       int forcesum = forearmtopsensormapped - (forearmbottomsensormapped + fingertipsensormapped);
+       int forcesum = forearmtopsensormapped - ((forearmbottomsensormapped+15) + fingertipsensormapped);
 
         int unmappedpos = 0; 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -359,7 +361,7 @@ void loop()
         Serial.print(" ");
         Serial.println();
         Serial.print("Bottom of Forearm: ");
-        Serial.print(forearmbottomsensormapped);
+        Serial.print(forearmbottomsensormapped+15);
         Serial.print(" ");
         Serial.println();
         Serial.print("Fingertip: ");
