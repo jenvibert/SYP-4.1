@@ -5,16 +5,12 @@
 #include <ctime>
 using namespace std;
 
-
-#define ENCA 21 // YELLOW
-#define ENCB 20 // WHITE
+#define ENCA 21
+#define ENCB 20 
 #define PWM 4
 #define IN2 14
 #define IN1 15
 
-//int led = 13; // assign led pin
-// device array to hold all connected i2c devices and analog outputs. board is only capable of 24 I2C devices and 2 analog outputs so we initialize array of 26
-// device array indices: [j][0] = I2C address [j][1] = bus [j][2] = capdac 
 int deviceArray[24][3] = {0}; 
 int led = 13; // assign led pin
 
@@ -99,16 +95,16 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
  uint16_t devID = FDC.getDeviceID(I2CBus, address);
  
  if (devID == 0x1004)
- {
- int i;
- for (i = 0; i < 24; i++)
- {
+  {
+    int i;
+    for (i = 0; i < 24; i++)
+  {
  if (deviceArray[i][0] == 0) // if the deviceArray address is zero, add a sensor into the array at that index. this should add sensors in order.
- {
- deviceArray[i][0] = address;
- deviceArray[i][1] = busID;
- break;
- }
+  {
+    deviceArray[i][0] = address;
+    deviceArray[i][1] = busID;
+    break;
+  }
  }
  nDevices++;
  }
@@ -116,15 +112,14 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
  else if (error == 4)
  {
  
- Serial.print(F("Unknown error at address 0x"));
+    Serial.print(F("Unknown error at address 0x"));
  if (address < 16)
- {
- Serial.print("0");
+  {
+    Serial.print("0");
+  }
+    Serial.println(address, HEX);
  }
- Serial.println(address, HEX);
  }
- }
- 
  return nDevices;
 }
 
@@ -149,7 +144,6 @@ bool handleInput()
       return false;
     }
   }
-
   return false;
 }
 
@@ -179,9 +173,7 @@ void readEncoder(){
   }
 }
 
-
 void setup() {
-  // put your setup code here, to run once:
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
@@ -190,12 +182,11 @@ void setup() {
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
 
-  
   Serial.println("target pos");
+
   // initialize the LED pin as an output.
   pinMode(led, OUTPUT);
   digitalWrite(led, HIGH); // turn the LED on (HIGH is the voltage level) while set up is ongoing
-
 
   // Serial INIT
   Serial.begin(115200); // serial baud rate
@@ -258,8 +249,6 @@ void setup() {
   // setup complete.
 }
 
-
-
 void loop() 
 {
       // data collection part: sample the sensors, and print them in the necessary key val format to the serial port
@@ -280,7 +269,6 @@ void loop()
       }
 
       delay(3); // delay 3 ms to let FDC capture data
-
 
       for (int i = 0; i < sensorCount; i++)
       {
@@ -307,14 +295,12 @@ void loop()
         long fingertipSensor = capValues[1][2];//retrieving capacitor value from second array
         long forearmbottomSensor = capValues[2][2];
 
-
         //motor power option 1 (with variable speed)
         // long sensordiff = abs(forearmSensor-(fingertipSensor+800));
         //long pwr = map(sensordiff, 20, 20000, 0 , 255);
         //if(pwr>255){
         //  pwr=255;
         //}
-
 
         // time difference
         long currT = micros();
@@ -335,7 +321,6 @@ void loop()
          long pwr=255;
 
          int pos = map(unmappedpos,0,2527,0,180);
-        
         
         int dir=0;
          if ((pos <= (forcesum + 10)) && (pos >= (forcesum - 10))){
