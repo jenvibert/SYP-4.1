@@ -258,7 +258,7 @@ float avgSensorOutput (int sampleCount){
 
 
   for(int i = 0;i<sampleCount;i++){
-  Serial.print("Flex");  
+  Serial.print("Relax");  
   configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac, i);
   delay(5);
   cap = getReadingFromFDCwithAddressAndBus(Wire, addr, capdac, i);
@@ -266,7 +266,7 @@ float avgSensorOutput (int sampleCount){
   }
 
   for(int i = 0;i<sampleCount;i++){
-  Serial.print("Relax");  
+  Serial.print("Flex");  
   configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac, i);
   delay(5);
   cap = getReadingFromFDCwithAddressAndBus(Wire, addr, capdac, i);
