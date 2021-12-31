@@ -255,38 +255,46 @@ float avgSensorOutput (int sampleCount){
   float avgFlex_max = 0;
   float avgExt_min = 0;
   float avgExt_max = 0;
-
+  long cap=0;
 
   for(int i = 0;i<sampleCount;i++){
   Serial.print("Relax");  
   configureMeasurementonFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
   delay(5);
-  long cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
-  avgFlex_min = avgFlex_min+cap;
+  cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
+  capValues[0][2]=cap;
+  avgFlex_min = avgFlex_min+ cap;
+  delay(5000);
   }
 
   for(int i = 0;i<sampleCount;i++){
   Serial.print("Flex");  
   configureMeasurementonFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
   delay(5);
-  long cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
+  cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[i][0], deviceArray[i][2], i);
+  capValues[0][2]=cap;
   avgFlex_max = avgFlex_max+cap;
+  delay(5000);
   }
 
   for(int i = 0;i<sampleCount;i++){
   Serial.print("Flex");  
   configureMeasurementonFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
   delay(5);
-  long cap = getReadingFromFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
+  cap = getReadingFromFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
+  capValues[2][2]=cap;
   avgExt_min = avgExt_min+cap;
+  delay(5000);
   }
 
   for(int i = 0;i<sampleCount;i++){
   Serial.print("Relax");  
   configureMeasurementonFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
   delay(5);
-  long cap = getReadingFromFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
+  cap = getReadingFromFDCwithAddressAndBus(Wire1, deviceArray[i][0], deviceArray[i][2], i);
+  capValues[2][2]=cap;
   avgExt_max = avgExt_max+cap;
+  delay(5000);
   }
 
   avgFlex_min=avgFlex_min/sampleCount;
