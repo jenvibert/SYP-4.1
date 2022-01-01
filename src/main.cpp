@@ -281,7 +281,8 @@ void setup() {
         // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
         // one call for each bus
       }
-      Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
+      Serial.println("Flex Arm as Hard as Possible and Enter y to continue");   
+      bool serialInput = handleInput();
       if (serialInput == true){
          avgFlexsor_max = avgSensorOutput (Wire, 400, 0);
          avgExtensor_max = avgSensorOutput (Wire2, 400, 2);
