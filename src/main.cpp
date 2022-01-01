@@ -19,6 +19,13 @@ long prevT = 0;
 float eprev = 0;
 float eintegral = 0;
 
+//DECLARE GLOBAL VARIABLES FOR MIN AND MAX OF SENSORS
+float avgFlexsor_min;
+float avgFlexsor_max;
+float avgExtensor_min;
+float avgExtensor_max;
+float avgFingerTip;
+
 // options for FDC1004 setup
 #define UPPER_BOUND 0X4000 // max readout capacitance
 #define LOWER_BOUND (-1 * UPPER_BOUND)
@@ -173,84 +180,21 @@ void readEncoder(){
   }
 }
 
-float avgSensorOutput_Flex_min (int sampleCount){
-  float avgFlex_min = 0;
-  long cap = 0;
-
-  Serial.print("Relax TF Sensor");
-  Serial.println();
-  delay(1000);  
-  for(int i = 0; i < sampleCount; i++){
-    configureMeasurementonFDCwithAddressAndBus(Wire, deviceArray[0][0], deviceArray[0][2], i);
-    delay(5);
-    cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[0][0], deviceArray[0][2], i);
-    capValues[0][2] = cap;
-    avgFlex_min = avgFlex_min + cap;
-  }
-  delay(3000);
-  avgFlex_min = avgFlex_min/sampleCount;
-  return avgFlex_min;
-}
-
-float avgSensorOutput_Flex_max (int sampleCount){
-  float avgFlex_max = 0;
+float avgSensorOutput (TwoWire &bus, int sampleCount, int sensorindex){
+  float avgForce = 0;
   long cap = 0;
   
-  Serial.print("Press TF Sensor"); 
-  Serial.println(); 
-  delay(1000); 
   for(int i = 0; i < sampleCount; i++){
-    configureMeasurementonFDCwithAddressAndBus(Wire, deviceArray[0][0], deviceArray[0][2], i);
+    configureMeasurementonFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], i);
     delay(5);
-    cap = getReadingFromFDCwithAddressAndBus(Wire, deviceArray[0][0], deviceArray[0][2], i);
-    capValues[0][2] = cap;
-    avgFlex_max = avgFlex_max + cap;
+    cap = getReadingFromFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], i);
+    capValues[sensorindex][2] = cap;
+    avgForce = avgForce + cap;
   }
-  delay(3000);
-  avgFlex_max = avgFlex_max/sampleCount;
-
-  return avgFlex_max;
+  avgForce = avgForce/sampleCount;
+  return avgForce;
 }
 
-float avgSensorOutput_Ext_min (int sampleCount){
-  float avgExt_min = 0;
-  long cap = 0;
-  
-  Serial.print("Relax BT Sensor");
-  Serial.println();
-  delay(1000);  
-  for(int i = 0; i < sampleCount; i++){ 
-    configureMeasurementonFDCwithAddressAndBus(Wire2, deviceArray[2][0], deviceArray[2][2], i);
-    delay(5);
-    cap = getReadingFromFDCwithAddressAndBus(Wire2, deviceArray[2][0], deviceArray[2][2], i);
-    capValues[2][2] = cap;
-    avgExt_min = avgExt_min + cap;
-  }
-  delay(3000);
-  avgExt_min = avgExt_min/sampleCount;
-
-  return avgExt_min;
- } 
- 
- float avgSensorOutput_Ext_max (int sampleCount){
-  float avgExt_max = 0;
-  long cap = 0;
-  
-  Serial.print("Flex BT Sensor"); 
-  Serial.println();
-  delay(1000);    
-  for(int i = 0; i < sampleCount; i++){
-    configureMeasurementonFDCwithAddressAndBus(Wire2, deviceArray[2][0], deviceArray[2][2], i);
-    delay(5);
-    cap = getReadingFromFDCwithAddressAndBus(Wire2, deviceArray[2][0], deviceArray[2][2], i);
-    capValues[2][2] = cap;
-    avgExt_max = avgExt_max + cap;
-  }
-  delay(3000);
-  avgExt_max = avgExt_max/sampleCount;
-
-  return avgExt_max;
-}
 
 void setup() {
   pinMode(ENCA,INPUT);
@@ -325,11 +269,50 @@ void setup() {
     Serial.println(deviceArray[x][1]);
   }
   
-    // avgSensorOutput_Flex_min (200);
-    // avgSensorOutput_Flex_max (200);
-    // avgSensorOutput_Ext_min (200);
-    // avgSensorOutput_Ext_max (200);
- 
+  while (true) {
+      //want to get the avg values of sensor but also give instructions to user
+      // if issues it might need a while loop
+      Serial.println("Relax Arm and Enter y to continue");
+      bool serialInput = handleInput();
+      if (serialInput == true){
+         avgFlexsor_min = avgSensorOutput (Wire, 400, 0);
+         avgExtensor_min = avgSensorOutput (Wire2, 400, 2);
+
+        // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
+        // one call for each bus
+      }
+      Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
+      if (serialInput == true){
+         avgFlexsor_max = avgSensorOutput (Wire, 400, 0);
+         avgExtensor_max = avgSensorOutput (Wire2, 400, 2);
+
+        // run avg function to get avg
+        // one call for each bus
+      }
+      Serial.println("Extend Fingers and Enter y to continue");
+      if (serialInput == true){
+         avgFingerTip = avgSensorOutput (Wire1, 400, 1);
+
+        // run avg function to get avg
+        // one call for each bus
+      }
+
+      Serial.println("Average Values Collected:");
+      Serial.println("Avg Flexsor Min: ");
+      Serial.println(avgFlexsor_min);
+      Serial.println("Avg Flexsor Max: ");
+      Serial.println(avgFlexsor_max);
+      Serial.println("Avg Extensor Min: ");
+      Serial.println(avgExtensor_min);
+      Serial.println("Avg Extensor Max: ");
+      Serial.println(avgExtensor_max);
+      Serial.println("Press y to continue, n to re-callibrate");
+
+      if(serialInput == true){
+        break;
+      }
+  }
+
 }
 
 void loop() 
@@ -378,13 +361,9 @@ void loop()
         long fingertipSensor = capValues[1][2];//retrieving capacitor value from second array
         long forearmbottomSensor = capValues[2][2];
 
-        long avgFlex_min = avgSensorOutput_Flex_min (400);
-        long avgFlex_max = avgSensorOutput_Flex_max (400);
-        long avgExt_min = avgSensorOutput_Ext_min (400);
-        long avgExt_max = avgSensorOutput_Ext_max (400);
         
         //mapped variables
-       int forearmtopsensormapped = map(forearmtopSensor,15000,55000,0,180);
+       int forearmtopsensormapped = map(forearmtopSensor,15000,55000,0,180); // CALL GLOBAL VARIABLE THAT WAS ASSIGNED 
        int fingertipsensormapped = map(fingertipSensor, 15000, 55000, 0, 180);
        int forearmbottomsensormapped = map(forearmbottomSensor,15000,55000,0,180);
        int forcesum = forearmtopsensormapped - ((forearmbottomsensormapped+15) + fingertipsensormapped);
@@ -417,22 +396,6 @@ void loop()
         // store previous error
         Serial.print("Time: ");
         Serial.print(millis());
-        Serial.println();
-        Serial.print("Avg Flex Min: ");
-        Serial.print(avgFlex_min);
-        Serial.print(" ");
-        Serial.println();
-        Serial.print("Avg Flex Max: ");
-        Serial.print(avgFlex_max);
-        Serial.print(" ");
-        Serial.println();
-        Serial.print("Avg Ext Min: ");
-        Serial.print(avgExt_min);
-        Serial.print(" ");
-        Serial.println();
-        Serial.print("Avg Ext Max: ");
-        Serial.print(avgExt_max);
-        Serial.print(" ");
         Serial.println();
         Serial.print("Top of Forearm: ");
         Serial.print(forearmtopsensormapped);
