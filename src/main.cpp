@@ -275,8 +275,7 @@ void setup() {
       // if issues it might need a while loop
      
       Serial.println("Relax Arm and Enter y to continue");
-      delay(1000);
-      if (serialInput == true){
+      if (handleInput()){
          avgFlexsor_min = avgSensorOutput (Wire, 400, 0);
          avgExtensor_min = avgSensorOutput (Wire2, 400, 2);
         // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
@@ -284,7 +283,7 @@ void setup() {
       }
 
       Serial.println("Flex Arm as Hard as Possible and Enter y to continue");   
-      if (serialInput == true){
+      if (handleInput()){
          avgFlexsor_max = avgSensorOutput (Wire, 400, 0);
          avgExtensor_max = avgSensorOutput (Wire2, 400, 2);
 
@@ -293,7 +292,7 @@ void setup() {
       }
 
       Serial.println("Extend Fingers and Enter y to continue");
-      if (serialInput == true){
+      if (handleInput()){
          avgFingerTip = avgSensorOutput (Wire1, 400, 1);
 
         // run avg function to get avg
@@ -311,7 +310,7 @@ void setup() {
       Serial.println(avgExtensor_max);
       Serial.println("Press y to continue, n to re-callibrate");
 
-      if(serialInput == true){
+      if(handleInput()){
         break;
       }
   }
