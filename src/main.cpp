@@ -129,7 +129,7 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
  }
  return nDevices;
 }
-
+char incomingCharacter = 'n';
 // method to handle input
 bool handleInput()
 {
@@ -402,6 +402,8 @@ void loop()
         setMotor(dir,pwr,PWM,IN1,IN2);
 
         // store previous error
+        Serial.print("I received: ");
+        Serial.println(incomingCharacter);
         Serial.print("Time: ");
         Serial.println(millis());
         Serial.print("Avg Flexsor Min: ");
