@@ -403,38 +403,23 @@ void loop()
 
         // store previous error
         Serial.print("Time: ");
-        Serial.print(millis());
-        Serial.println();
-        Serial.println("Avg Flexsor Min: ");
+        Serial.println(millis());
+        Serial.print("Avg Flexsor Min: ");
         Serial.println(avgFlexsor_min);
-        Serial.println("Avg Flexsor Max: ");
+        Serial.print("Avg Flexsor Max: ");
         Serial.println(avgFlexsor_max);
-        Serial.println("Avg Extensor Min: ");
+        Serial.print("Avg Extensor Min: ");
         Serial.println(avgExtensor_min);
         Serial.print("Top of Forearm: ");
-        Serial.print(forearmtopsensormapped);
-        Serial.print(" ");
-        Serial.println();
+        Serial.println(forearmtopsensormapped);
         Serial.print("Bottom of Forearm: ");
-        Serial.print(forearmbottomsensormapped+15);
-        Serial.print(" ");
-        Serial.println();
+        Serial.println(forearmbottomsensormapped+15);
         Serial.print("Fingertip: ");
-        Serial.print(fingertipsensormapped);
-        Serial.print(" ");
-        Serial.println();
+        Serial.println(fingertipsensormapped);
         Serial.print("Sum of Forces: ");
-        Serial.print(forcesum);
-        Serial.print(" ");
-        Serial.println();
+        Serial.println(forcesum);
         Serial.print("Position: ");
-        Serial.print(pos);
-        Serial.print(" ");
-        Serial.println();
+        Serial.println(pos);
         Serial.print("Direction: ");
         Serial.print(dir);
-        Serial.print(" ");
-        Serial.println();
-        Serial.print(" ");
-        Serial.println();
 }
