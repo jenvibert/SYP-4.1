@@ -279,7 +279,7 @@ void setup()
     Serial.println(deviceArray[x][1]);
   }
 
-  bool serialInput = handleInput();
+  //bool serialInput = handleInput();
   while (true)
   {
     // want to get the avg values of sensor but also give instructions to user
