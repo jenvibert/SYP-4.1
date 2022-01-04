@@ -324,8 +324,8 @@ void setup()
     Serial.println(avgExtensor_min);
     Serial.println("Avg Extensor Max: ");
     Serial.println(avgExtensor_max);
-    Serial.println("Press y to continue, n to re-callibrate");
 
+    Serial.println("Press y to continue, n to re-callibrate");
     if (handleInput())
     {
       break;
