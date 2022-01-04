@@ -150,8 +150,8 @@ bool handleInput()
     break;
 
   default:
-    break;
     return false;
+    break;
   }
 }
 
