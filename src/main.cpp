@@ -280,6 +280,7 @@ void setup()
   }
 
   //bool serialInput = handleInput();
+  Serial.println("this is a test");
   while (true)
   {
     // want to get the avg values of sensor but also give instructions to user
