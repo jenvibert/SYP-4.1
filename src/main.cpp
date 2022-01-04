@@ -129,8 +129,7 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
   }
   return nDevices;
 }
-char incomingCharacter = 'n';
-// method to handle input
+
 
 bool handleInput()
 {
