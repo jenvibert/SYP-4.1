@@ -134,6 +134,7 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
 bool handleInput()
 {
   Serial.flush();
+  Serial.setTimeout(8000);
   while (Serial.available() == 0)
   {
   }
