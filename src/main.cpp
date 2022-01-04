@@ -207,6 +207,7 @@ float avgSensorOutput(TwoWire &bus, int sampleCount, int sensorindex)
 
 void setup()
 {
+  Serial.println("starting setup");
   pinMode(ENCA, INPUT);
   pinMode(ENCB, INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA), readEncoder, RISING);
