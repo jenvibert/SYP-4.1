@@ -160,10 +160,8 @@ void WaitforInput(){
     if (Serial.available() > 0){
       break;
     }
-
-    else{
+    else
       delay(500);
-    }
   }
 }
 
@@ -292,49 +290,132 @@ void setup()
     Serial.println(deviceArray[x][1]);
   }
   
-  while(true){
-    // want to get the avg values of sensor but also give instructions to user
-    // if issues it might need a while loop
+  // float minFlexion = 0;
+  // float minExtension = 0;
+  // float maxFlexion = 0;
+  // float maxExtension = 0;
 
-    Serial.println("Relax Arm and Enter y to continue");
-    WaitforInput();
-    avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
-    avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
-      // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
-      // one call for each bus
-  
+  bool calibrationDone = false;
+  bool serialInput = false;
 
-    Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
-    WaitforInput();
-    avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
-    avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+  delay(2000);
 
-      // run avg function to get avg
-      // one call for each bus
+  while(!calibrationDone)
+  {
+    
+    Serial.println("Relax and press y to get sensor minima");
 
+    while(true)
+    { 
+      if (Serial.available()> 0)
+      {
+        serialInput = handleInput();
 
-    Serial.println("Extend Fingers and Enter y to continue");
-    WaitforInput();
-    avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+        if (serialInput == true)
+        {
+          Serial.println("getting minima...");
+          delay(500);
+          avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
+          avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+          Serial.println("minima acquired");
+          delay(1000);
 
-      // run avg function to get avg
-      // one call for each bus
-  
+          break;
+        }
+        else
+        {
+          delay(500);
+        }
+      }
+      else
+      {
+        delay(500);
+      }
 
-    Serial.println("Average Values Collected:");
-    Serial.println("Avg Flexsor Min: ");
-    Serial.println(avgFlexsor_min);
-    Serial.println("Avg Flexsor Max: ");
-    Serial.println(avgFlexsor_max);
-    Serial.println("Avg Extensor Min: ");
-    Serial.println(avgExtensor_min);
-    Serial.println("Avg Extensor Max: ");
-    Serial.println(avgExtensor_max);
+    }
 
-    Serial.println("Press y to continue, n to re-callibrate");
-    bool serialInput = handleInput();
-    if (serialInput == true){
-      break;
+    Serial.println("Flex as hard as you can and press y to get flexor sensor max");
+
+    while(true)
+    { 
+      if (Serial.available()> 0)
+      {
+        serialInput = handleInput();
+
+        if (serialInput == true)
+        {
+          Serial.println("getting flexor max...");
+          delay(500);
+          avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
+          avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+          Serial.println("flexor max acquired");
+          delay(1000);
+          break;        
+        }
+        else
+        {
+          delay(500);
+        }
+      }
+      else
+      {
+        delay(500);
+      }
+
+    }
+
+    Serial.println("Extend as hard as you can and press y to get extensor sensor max");
+
+    while(true)
+    { 
+      if (Serial.available()> 0)
+      {
+        serialInput = handleInput();
+
+        if (serialInput == true)
+        {
+          Serial.println("getting extensor max...");
+          delay(500);
+          avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+          Serial.println("extensor max acquired");
+          delay(1000);
+          break;        
+        }
+        else
+        {
+          delay(500);
+        }
+      }
+      else
+      {
+        delay(500);
+      }
+    }
+
+    Serial.println("calibration complete. press y to accept or n to restart.");
+
+    while(true)
+    { 
+      if (Serial.available()> 0)
+      {
+        serialInput = handleInput();
+        if (serialInput == true)
+        {
+          Serial.println("calibration complete.");
+          calibrationDone = true;
+          delay(1000);
+          break;        
+        }
+        else
+        {
+          calibrationDone = false;
+          break;
+        }
+      }
+      else
+      {
+        delay(500);
+      }
     }
   }
 }
