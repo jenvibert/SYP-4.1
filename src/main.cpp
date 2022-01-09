@@ -155,6 +155,29 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
 //   }
 // }
 
+bool handleInput()
+{
+  while (Serial.available() > 0)
+  {
+    char incomingCharacter = Serial.read();
+    switch (incomingCharacter)
+    {
+    case 'y':
+      return true;
+      break;
+
+    case 'n':
+      return false;
+      break;
+
+    default:
+      break;
+      return false;
+    }
+  }
+  return false;
+}
+
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2)
 { //setting up motor
   analogWrite(pwm, pwmVal);
@@ -280,56 +303,107 @@ void setup()
     Serial.println(deviceArray[x][1]);
   }
 
-  // bool serialInput = handleInput();
-  // while (true)
-  // {
-  //   // want to get the avg values of sensor but also give instructions to user
-  //   // if issues it might need a while loop
+  bool serialInput = handleInput();
+  while (true)
+  {
+    // want to get the avg values of sensor but also give instructions to user
+    // if issues it might need a while loop
 
-  //   Serial.println("Relax Arm and Enter y to continue");
-  //   if (serialInput == true)
-  //   {
-  //     avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
-  //     avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
-  //     // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
-  //     // one call for each bus
-  //   }
+    Serial.println("Relax Arm and Enter y to continue");
+    if (serialInput == true)
+    {
+      avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
+      avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+      // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
+      // one call for each bus
+    }
 
-  //   Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
-  //   if (serialInput == true)
-  //   {
-  //     avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
-  //     avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+    Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
+    if (serialInput == true)
+    {
+      avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
+      avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
 
-  //     // run avg function to get avg
-  //     // one call for each bus
-  //   }
+      // run avg function to get avg
+      // one call for each bus
+    }
 
-  //   Serial.println("Extend Fingers and Enter y to continue");
-  //   if (serialInput == true)
-  //   {
-  //     avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+    Serial.println("Extend Fingers and Enter y to continue");
+    if (serialInput == true)
+    {
+      avgFingerTip = avgSensorOutput(Wire1, 400, 1);
 
-  //     // run avg function to get avg
-  //     // one call for each bus
-  //   }
+      // run avg function to get avg
+      // one call for each bus
+    }
 
-  //   Serial.println("Average Values Collected:");
-  //   Serial.println("Avg Flexsor Min: ");
-  //   Serial.println(avgFlexsor_min);
-  //   Serial.println("Avg Flexsor Max: ");
-  //   Serial.println(avgFlexsor_max);
-  //   Serial.println("Avg Extensor Min: ");
-  //   Serial.println(avgExtensor_min);
-  //   Serial.println("Avg Extensor Max: ");
-  //   Serial.println(avgExtensor_max);
+    Serial.println("Average Values Collected:");
+    Serial.println("Avg Flexsor Min: ");
+    Serial.println(avgFlexsor_min);
+    Serial.println("Avg Flexsor Max: ");
+    Serial.println(avgFlexsor_max);
+    Serial.println("Avg Extensor Min: ");
+    Serial.println(avgExtensor_min);
+    Serial.println("Avg Extensor Max: ");
+    Serial.println(avgExtensor_max);
 
-  //   Serial.println("Press y to continue, n to re-callibrate");
-  //   if (serialInput == true)
-  //   {
-  //     break;
-  //   }
-  // }
+    Serial.println("Press y to continue, n to re-callibrate");
+    if (serialInput == true)
+    {
+      break;
+    }
+  }
+
+// while (true)
+//   {
+//     // want to get the avg values of sensor but also give instructions to user
+//     // if issues it might need a while loop
+
+//     Serial.println("Relax Arm and Enter y to continue");
+//     if (handleInput())
+//     {
+//       avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
+//       avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+//       // run avg function to get avg // GLOBAL VARIABLE = WHATEVER AVG FORCE ITS SCANNING
+//       // one call for each bus
+//     }
+
+//     Serial.println("Flex Arm as Hard as Possible and Enter y to continue");
+//     if (handleInput())
+//     {
+//       avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
+//       avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+
+//       // run avg function to get avg
+//       // one call for each bus
+//     }
+
+//     Serial.println("Extend Fingers and Enter y to continue");
+//     if (handleInput())
+//     {
+//       avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+
+//       // run avg function to get avg
+//       // one call for each bus
+//     }
+
+//     Serial.println("Average Values Collected:");
+//     Serial.println("Avg Flexsor Min: ");
+//     Serial.println(avgFlexsor_min);
+//     Serial.println("Avg Flexsor Max: ");
+//     Serial.println(avgFlexsor_max);
+//     Serial.println("Avg Extensor Min: ");
+//     Serial.println(avgExtensor_min);
+//     Serial.println("Avg Extensor Max: ");
+//     Serial.println(avgExtensor_max);
+
+//     Serial.println("Press y to continue, n to re-callibrate");
+//     if (handleInput())
+//     {
+//       break;
+//     }
+//   }
+
 }
 
 void loop()
@@ -377,11 +451,6 @@ void loop()
   long forearmtopSensor = capValues[0][2]; //retrieving capacitor value from the first array
   long fingertipSensor = capValues[1][2];  //retrieving capacitor value from second array
   long forearmbottomSensor = capValues[2][2];
-
-  //  avgFlexsor_min = avgSensorOutput (Wire, 400, 0);
-  //  avgExtensor_min = avgSensorOutput (Wire2, 400, 2);
-  //  avgFlexsor_max = avgSensorOutput (Wire, 400, 0);
-  //  avgExtensor_max = avgSensorOutput (Wire2, 400, 2);
 
   //mapped variables
   int forearmtopsensormapped = map(forearmtopSensor, 15000, 55000, 0, 180); // CALL GLOBAL VARIABLE THAT WAS ASSIGNED
