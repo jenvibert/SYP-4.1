@@ -303,7 +303,7 @@ void setup()
   while(!calibrationDone)
   {
     
-    Serial.println("Relax and press y to get sensor minima");
+    Serial.println("Relax and press y to start calibration");
 
     while(true)
     { 
@@ -313,11 +313,12 @@ void setup()
 
         if (serialInput == true)
         {
-          Serial.println("getting minima...");
+          Serial.println("getting flexor minima, extensor maxima, and fingertip avg...");
           delay(500);
           avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
-          avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
-          Serial.println("minima acquired");
+          avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+          avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+          Serial.println("flexor minima and extensor maxima acquired");
           delay(1000);
 
           break;
@@ -334,7 +335,7 @@ void setup()
 
     }
 
-    Serial.println("Flex as hard as you can and press y to get flexor sensor max");
+    Serial.println("Flex as hard as you can and press y to continue calibration");
 
     while(true)
     { 
@@ -344,11 +345,11 @@ void setup()
 
         if (serialInput == true)
         {
-          Serial.println("getting flexor max...");
+          Serial.println("getting flexor maxima and extensor minima...");
           delay(500);
           avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
-          avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
-          Serial.println("flexor max acquired");
+          avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+          Serial.println("flexor maxima and extensor minima acquired");
           delay(1000);
           break;        
         }
@@ -362,34 +363,6 @@ void setup()
         delay(500);
       }
 
-    }
-
-    Serial.println("Extend as hard as you can and press y to get extensor sensor max");
-
-    while(true)
-    { 
-      if (Serial.available()> 0)
-      {
-        serialInput = handleInput();
-
-        if (serialInput == true)
-        {
-          Serial.println("getting extensor max...");
-          delay(500);
-          avgFingerTip = avgSensorOutput(Wire1, 400, 1);
-          Serial.println("extensor max acquired");
-          delay(1000);
-          break;        
-        }
-        else
-        {
-          delay(500);
-        }
-      }
-      else
-      {
-        delay(500);
-      }
     }
 
     Serial.println("calibration complete. press y to accept or n to restart.");
