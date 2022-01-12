@@ -130,40 +130,48 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
   return nDevices;
 }
 
-
-bool handleInput()
+bool waitForInput()
 {
-  while (Serial.available() > 0)
+  while (true)
   {
-    char incomingCharacter = Serial.read();
-    switch (incomingCharacter)
+    if (Serial.available() > 0)
     {
-    case 'y':
-      return true;
-      break;
+      char incomingCharacter = Serial.read();
+      return (incomingCharacter == 'y');
 
-    case 'n':
-      return false;
-      break;
+      // switch (incomingCharacter)
+      // {
+      // case 'y':
+      // return true;
+      // break;
 
-    default:
-      break;
-      return false;
+      // case 'n':
+      // return false;
+      // break;
+
+      // default:
+      // return false;
+      // break;
+    }
+    else
+    {
+      Serial.println("Delaying...");
+      delay(500);
     }
   }
   return false;
 }
 
-void WaitforInput(){
-    while (true){
-    
-    if (Serial.available() > 0){
-      break;
-    }
-    else
-      delay(500);
-  }
-}
+// void WaitforInput(){
+//     while (true){
+
+//     if (Serial.available() > 0){
+//       break;
+//     }
+//     else
+//       delay(500);
+//   }
+// }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2)
 { //setting up motor
@@ -210,8 +218,11 @@ float avgSensorOutput(TwoWire &bus, int sampleCount, int sensorindex)
     cap = getReadingFromFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], i);
     capValues[sensorindex][2] = cap;
     avgForce = avgForce + cap;
+    
+    Serial.printf("sample: %d\n", i);
   }
   avgForce = avgForce / sampleCount;
+  Serial.printf("Avg sensor value: %f\n", avgForce);
   return avgForce;
 }
 
@@ -289,104 +300,54 @@ void setup()
     Serial.print("bus: ");
     Serial.println(deviceArray[x][1]);
   }
-  
 
   bool calibrationDone = false;
   bool serialInput = false;
 
   delay(3000);
 
-  while(!calibrationDone)
+  while (!calibrationDone)
   {
-    
+
     Serial.println("Relax and press y to start calibration");
-
-    while(true)
-    { 
-      if (Serial.available()> 0)
-      {
-        serialInput = handleInput();
-
-        if (serialInput == true)
-        {
-          Serial.println("getting flexor minima, extensor maxima, and fingertip avg...");
-          delay(1000);
-          avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
-          avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
-          avgFingerTip = avgSensorOutput(Wire1, 400, 1);
-          Serial.println("flexor minima and extensor maxima acquired");
-          delay(1000);
-
-          break;
-        }
-        else
-        {
-          delay(500);
-        }
-      }
-      else
-      {
-        delay(500);
-      }
-
-    }
+    waitForInput();
+    Serial.println("getting flexor minima, extensor maxima, and fingertip avg...");
+     delay(500);
+    avgFlexsor_min = avgSensorOutput(Wire, 100, 0);
+     delay(500);
+    avgExtensor_max = avgSensorOutput(Wire2, 100, 2);
+     delay(500);
+    avgFingerTip = avgSensorOutput(Wire1, 100, 1);
+    Serial.println("flexor minima and extensor maxima acquired");
+    // delay(1000);
 
     Serial.println("Flex as hard as you can and press y to continue calibration");
-
-    while(true)
-    { 
-      if (Serial.available()> 0)
-      {
-        serialInput = handleInput();
-
-        if (serialInput == true)
-        {
-          Serial.println("getting flexor maxima and extensor minima...");
-          delay(1000);
-          avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
-          avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
-          Serial.println("flexor maxima and extensor minima acquired");
-          delay(1000);
-          break;        
-        }
-        else
-        {
-          delay(500);
-        }
-      }
-      else
-      {
-        delay(500);
-      }
-
-    }
+    waitForInput();
+    Serial.println("getting flexor maxima and extensor minima...");
+    // delay(500);
+    // avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
+    // avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+    Serial.println("flexor maxima and extensor minima acquired");
+    // delay(1000);
 
     Serial.println("calibration complete. press y to accept or n to restart.");
+    serialInput = waitForInput();
 
-    while(true)
-    { 
-      if (Serial.available()> 0)
-      {
-        serialInput = handleInput();
-        if (serialInput == true)
-        {
-          Serial.println("calibration complete.");
-          calibrationDone = true;
-          delay(1000);
-          break;        
-        }
-        else
-        {
-          calibrationDone = false;
-          break;
-        }
-      }
-      else
-      {
-        delay(500);
-      }
+    if (serialInput == true)
+    {
+      Serial.println("calibration complete.");
+      calibrationDone = true;
+      delay(1000);
+      break;
+    }
+    else
+    {
+      calibrationDone = false;
     }
   }
+
+ 
+
 }
 
 void loop()
@@ -470,9 +431,7 @@ void loop()
   // signal the motor
   setMotor(dir, pwr, PWM, IN1, IN2);
 
-  // store previous error
-  // Serial.print("I received: ");
-  // Serial.println(incomingCharacter);
+  Serial.println(" ");
   Serial.print("Time: ");
   Serial.println(millis());
   Serial.print("Avg Flexsor Min: ");
@@ -493,4 +452,5 @@ void loop()
   Serial.println(pos);
   Serial.print("Direction: ");
   Serial.print(dir);
+  Serial.println(" ");
 }
