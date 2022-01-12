@@ -290,15 +290,11 @@ void setup()
     Serial.println(deviceArray[x][1]);
   }
   
-  // float minFlexion = 0;
-  // float minExtension = 0;
-  // float maxFlexion = 0;
-  // float maxExtension = 0;
 
   bool calibrationDone = false;
   bool serialInput = false;
 
-  delay(2000);
+  delay(3000);
 
   while(!calibrationDone)
   {
@@ -314,7 +310,7 @@ void setup()
         if (serialInput == true)
         {
           Serial.println("getting flexor minima, extensor maxima, and fingertip avg...");
-          delay(500);
+          delay(1000);
           avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
           avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
           avgFingerTip = avgSensorOutput(Wire1, 400, 1);
@@ -346,7 +342,7 @@ void setup()
         if (serialInput == true)
         {
           Serial.println("getting flexor maxima and extensor minima...");
-          delay(500);
+          delay(1000);
           avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
           avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
           Serial.println("flexor maxima and extensor minima acquired");
