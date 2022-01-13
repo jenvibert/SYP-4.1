@@ -39,6 +39,16 @@ int sensorCount = 0;
 // make a global array of cap values that are just updated for each loop iteration (otherwise need to create arrays each loop iteration
 float capValues[24][3] = {0};
 
+struct Finger
+{
+  float extensorMin;
+  float extensorMax;
+  float flexorMin;
+  float flexorMax;
+  float fingerTip;
+};
+
+
 // get time
 time_t getTeensy3Time()
 {
@@ -46,7 +56,7 @@ time_t getTeensy3Time()
 }
 
 // functions to configure and read FDC data
-void configureMeasurementonFDCwithAddressAndBus(TwoWire &bus, int addr, int capdac, int i) // the i here is the sensor index in the array - this is where cap dac values are stored.
+void configureMeasurementonFDCwithAddressAndBus(TwoWire &bus, int addr, int capdac) // the i here is the sensor index in the array - this is where cap dac values are stored.
 {
   FDC.configureMeasurementSingle(MEASURMENT, CHANNEL, capdac, bus, addr);
   FDC.triggerSingleMeasurement(MEASURMENT, FDC1004_400HZ, bus, addr);
@@ -130,16 +140,24 @@ int I2Cscanner(TwoWire &I2CBus, int busID)
   return nDevices;
 }
 
+void clearInputBuffer()
+{
+  while (Serial.available() > 0) Serial.read();
+}
+
 bool waitForInput()
 {
+  // Serial.flush();
+
   while (true)
   {
     if (Serial.available() > 0)
     {
-      char incomingCharacter = Serial.read();
-      return (incomingCharacter == 'y');
+      Serial.println("Reading Input!");
+      char firstByte = Serial.read();
+      return (firstByte == 'y');
 
-      // switch (incomingCharacter)
+      // switch (firstByte)
       // {
       // case 'y':
       // return true;
@@ -153,11 +171,11 @@ bool waitForInput()
       // return false;
       // break;
     }
-    else
-    {
-      Serial.println("Delaying...");
-      delay(500);
-    }
+    // else
+    // {
+    //   Serial.println("Delaying...");
+    //   delay(500);
+    // }
   }
   return false;
 }
@@ -208,27 +226,29 @@ void readEncoder()
 
 float avgSensorOutput(TwoWire &bus, int sampleCount, int sensorindex)
 {
-  float avgForce = 0;
+  float totalForce = 0;
   long cap = 0;
 
   for (int i = 0; i < sampleCount; i++)
   {
-    configureMeasurementonFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], i);
+    configureMeasurementonFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2]);
     delay(5);
-    cap = getReadingFromFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], i);
-    capValues[sensorindex][2] = cap;
-    avgForce = avgForce + cap;
+    cap = getReadingFromFDCwithAddressAndBus(bus, deviceArray[sensorindex][0], deviceArray[sensorindex][2], sensorindex);
+    totalForce += cap;
     
-    Serial.printf("sample: %d\n", i);
+    //Serial.printf("sample: %d\n", i);
   }
-  avgForce = avgForce / sampleCount;
+  float avgForce = totalForce / sampleCount;
   Serial.printf("Avg sensor value: %f\n", avgForce);
+  
+  capValues[sensorindex][2] = avgForce;
   return avgForce;
 }
 
 void setup()
 {
-  Serial.println("starting setup");
+  // delay(2500);
+
   pinMode(ENCA, INPUT);
   pinMode(ENCB, INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA), readEncoder, RISING);
@@ -237,15 +257,13 @@ void setup()
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
 
-  Serial.println("target pos");
-
   // initialize the LED pin as an output.
   pinMode(led, OUTPUT);
   digitalWrite(led, HIGH); // turn the LED on (HIGH is the voltage level) while set up is ongoing
 
   // Serial INIT
   Serial.begin(115200); // serial baud rate
-  Serial.setTimeout(2);
+  Serial.setTimeout(5);
 
   // I2C Bus init
   Wire.begin();
@@ -280,8 +298,8 @@ void setup()
     }
 
     int sensorsBusOne = I2Cscanner(Wire, 0); //setting up first bus for I2C
-    int sensorsBusTwo = I2Cscanner(Wire, 1); //setting up second bus for I2C
-    int sensorBusThree = I2Cscanner(Wire, 2);
+    int sensorsBusTwo = I2Cscanner(Wire1, 1); //setting up second bus for I2C
+    int sensorBusThree = I2Cscanner(Wire2, 2);
 
     numberOfSensors = sensorsBusOne + sensorsBusTwo + sensorBusThree;
     sensorCount = numberOfSensors; // store number of sensors detected in a global variable so you dont have to keep counting number of sensors in main loop (per previous code)
@@ -309,35 +327,45 @@ void setup()
   while (!calibrationDone)
   {
 
-    Serial.println("Relax and press y to start calibration");
+    Serial.println("1.0 Relax and press y to start calibration");
     waitForInput();
-    Serial.println("getting flexor minima, extensor maxima, and fingertip avg...");
-     delay(500);
-    avgFlexsor_min = avgSensorOutput(Wire, 100, 0);
-     delay(500);
-    avgExtensor_max = avgSensorOutput(Wire2, 100, 2);
-     delay(500);
-    avgFingerTip = avgSensorOutput(Wire1, 100, 1);
-    Serial.println("flexor minima and extensor maxima acquired");
-    // delay(1000);
+    Serial.println("1.1 getting flexor minima, extensor maxima, and fingertip avg...");
+    Serial.println("1.2 flexor minima");
+    avgFlexsor_min = avgSensorOutput(Wire, 400, 0);
+    delay(1000);
 
-    Serial.println("Flex as hard as you can and press y to continue calibration");
+    Serial.println("1.3 extensor maxima");
+    avgExtensor_max = avgSensorOutput(Wire2, 400, 2);
+    delay(1000);
+
+    Serial.println("1.4 finger tip av");
+    avgFingerTip = avgSensorOutput(Wire1, 400, 1);
+    delay(1000);
+     
+    Serial.println("1.5 flexor minima, extensor maxima, and fingertip avg acquired");
+    delay(1000);
+
+    Serial.println("2.0 Flex as hard as you can and press y to continue calibration");
     waitForInput();
-    Serial.println("getting flexor maxima and extensor minima...");
-    // delay(500);
-    // avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
-    // avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
-    Serial.println("flexor maxima and extensor minima acquired");
-    // delay(1000);
+    Serial.println("2.1 getting flexor maxima and extensor minima...");
+    Serial.println("2.2 flexor maxima");
+    avgFlexsor_max = avgSensorOutput(Wire, 400, 0);
+    delay(1000);
+    
+    Serial.println("2.3 extensor minima");
+    avgExtensor_min = avgSensorOutput(Wire2, 400, 2);
+    delay(1000);
 
-    Serial.println("calibration complete. press y to accept or n to restart.");
+    Serial.println("2.4 flexor maxima and extensor minima acquired");
+    delay(1000);
+    
+    Serial.println("3.0 calibration complete. press y to accept or n to restart.");
     serialInput = waitForInput();
-
+    
     if (serialInput == true)
     {
-      Serial.println("calibration complete.");
+      Serial.println("3.1 calibration complete."); 
       calibrationDone = true;
-      delay(1000);
       break;
     }
     else
@@ -362,11 +390,11 @@ void loop()
     int capdac = deviceArray[i][2]; // get the capdac value
 
     if (bus == 0)
-      configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac, i);
+      configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac);
     else if (bus == 1)
-      configureMeasurementonFDCwithAddressAndBus(Wire1, addr, capdac, i);
+      configureMeasurementonFDCwithAddressAndBus(Wire1, addr, capdac);
     else if (bus == 2)
-      configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac, i);
+      configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac);
   }
 
   delay(3); // delay 3 ms to let FDC capture data
@@ -392,15 +420,15 @@ void loop()
     capValues[i][1] = 0;
   }
 
-  long forearmtopSensor = capValues[0][2]; //retrieving capacitor value from the first array
+  long flexorSensor = capValues[0][2]; //retrieving capacitor value from the first array
   long fingertipSensor = capValues[1][2];  //retrieving capacitor value from second array
-  long forearmbottomSensor = capValues[2][2];
+  long extensorSensor = capValues[2][2];
 
   //mapped variables
-  int forearmtopsensormapped = map(forearmtopSensor, 15000, 55000, 0, 180); // CALL GLOBAL VARIABLE THAT WAS ASSIGNED
+  int flexsorSensorMapped = map(flexorSensor, 15000, 55000, 0, 180); // CALL GLOBAL VARIABLE THAT WAS ASSIGNED
   int fingertipsensormapped = map(fingertipSensor, 15000, 55000, 0, 180);
-  int forearmbottomsensormapped = map(forearmbottomSensor, 15000, 55000, 0, 180);
-  int forcesum = forearmtopsensormapped - ((forearmbottomsensormapped + 15) + fingertipsensormapped);
+  int extensorSensorMapped = map(extensorSensor, 15000, 55000, 0, 180);
+  int forcesum = flexsorSensorMapped - ((extensorSensorMapped + 15) + fingertipsensormapped);
 
   int unmappedpos = 0;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -431,26 +459,36 @@ void loop()
   // signal the motor
   setMotor(dir, pwr, PWM, IN1, IN2);
 
-  Serial.println(" ");
-  Serial.print("Time: ");
-  Serial.println(millis());
-  Serial.print("Avg Flexsor Min: ");
-  Serial.println(avgFlexsor_min);
-  Serial.print("Avg Flexsor Max: ");
-  Serial.println(avgFlexsor_max);
-  Serial.print("Avg Extensor Min: ");
-  Serial.println(avgExtensor_min);
-  Serial.print("Top of Forearm: ");
-  Serial.println(forearmtopsensormapped);
-  Serial.print("Bottom of Forearm: ");
-  Serial.println(forearmbottomsensormapped + 15);
-  Serial.print("Fingertip: ");
-  Serial.println(fingertipsensormapped);
-  Serial.print("Sum of Forces: ");
-  Serial.println(forcesum);
-  Serial.print("Position: ");
-  Serial.println(pos);
-  Serial.print("Direction: ");
-  Serial.print(dir);
-  Serial.println(" ");
+  uint32_t elapsedTime = millis();
+  if ((elapsedTime % 100) == 0)
+  {
+    Serial.println(" ");
+    Serial.print("Time: ");
+    Serial.println(millis());
+    // Serial.print("Avg Flexsor Min: ");
+    // Serial.println(avgFlexsor_min);
+    // Serial.print("Avg Flexsor Max: ");
+    // Serial.println(avgFlexsor_max);
+    // Serial.print("Avg Extensor Min: ");
+    // Serial.println(avgExtensor_min);
+    Serial.print("Flexor Raw: ");
+    Serial.println(flexorSensor);
+    Serial.print("Extensor Raw: ");
+    Serial.println(extensorSensor);
+    Serial.print("Fingertip Raw: ");
+    Serial.println(fingertipSensor);
+    Serial.print("Top of Forearm: ");
+    Serial.println(flexsorSensorMapped);
+    Serial.print("Bottom of Forearm: ");
+    Serial.println(extensorSensorMapped + 15);
+    Serial.print("Fingertip: ");
+    Serial.println(fingertipsensormapped);
+    Serial.print("Sum of Forces: ");
+    Serial.println(forcesum);
+    Serial.print("Position: ");
+    Serial.println(pos);
+    Serial.print("Direction: ");
+    Serial.print(dir);
+    Serial.println(" ");
+  }
 }
