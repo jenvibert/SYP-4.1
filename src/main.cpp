@@ -10,6 +10,7 @@ using namespace std;
 #define PWM 4
 #define IN2 14
 #define IN1 15
+#define ANALOGPOS 27
 
 int deviceArray[24][3] = {0};
 int led = 13; // assign led pin
@@ -256,6 +257,7 @@ void setup()
   pinMode(PWM, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
+  pinMode(ANALOGPOS, OUTPUT);
 
   // initialize the LED pin as an output.
   pinMode(led, OUTPUT);
@@ -470,6 +472,8 @@ void loop()
   // signal the motor
   setMotor(dir, pwr, PWM, IN1, IN2);
 
+  int analogPosition = analogRead(ANALOGPOS);
+
   uint32_t elapsedTime = millis();
   if ((elapsedTime % 75) == 0)
   {
@@ -495,5 +499,7 @@ void loop()
     Serial.print("Direction: ");
     Serial.print(dir);
     Serial.println(" ");
+    Serial.print("Analog Position: ");
+    Serial.println(analogPosition);
    }
 }
