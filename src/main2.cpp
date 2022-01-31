@@ -7,18 +7,21 @@ using namespace std;
 
 #define ENCA 21
 #define ENCB 20
+#define ENCC 22
+#define ENCD 23
 #define PWM 4
-#define IN2 14
+#define PWM1 5
 #define IN1 15
-#define ANALOGPOS 27
+#define IN2 14
+#define IN3 41
+#define IN4 40
+
 
 int deviceArray[24][3] = {0};
 int led = 13; // assign led pin
 
-volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
-long prevT = 0;
-float eprev = 0;
-float eintegral = 0;
+volatile int posi1 = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
+volatile int posi2 = 0;
 
 //DECLARE GLOBAL VARIABLES FOR MIN AND MAX OF SENSORS
 float avgFlexsor_min;
@@ -39,15 +42,6 @@ int sensorCount = 0;
 
 // make a global array of cap values that are just updated for each loop iteration (otherwise need to create arrays each loop iteration
 float capValues[24][3] = {0};
-
-// struct Finger
-// {
-//   float extensorMin;
-//   float extensorMax;
-//   float flexorMin;
-//   float flexorMax;
-//   float fingerTip;
-// };
 
 
 // get time
@@ -148,8 +142,6 @@ void clearInputBuffer()
 
 bool waitForInput()
 {
-  // Serial.flush();
-
   while (true)
   {
     if (Serial.available() > 0)
@@ -157,50 +149,21 @@ bool waitForInput()
       Serial.println("Reading Input!");
       char firstByte = Serial.read();
       return (firstByte == 'y');
-
-      // switch (firstByte)
-      // {
-      // case 'y':
-      // return true;
-      // break;
-
-      // case 'n':
-      // return false;
-      // break;
-
-      // default:
-      // return false;
-      // break;
     }
-    // else
-    // {
-    //   Serial.println("Delaying...");
-    //   delay(500);
-    // }
   }
   return false;
 }
 
-// void WaitforInput(){
-//     while (true){
 
-//     if (Serial.available() > 0){
-//       break;
-//     }
-//     else
-//       delay(500);
-//   }
-// }
-
-void setMotor(int dir, int pwmVal, int pwm, int in1, int in2)
+void setMotor1 (int dir1, int pwmVal, int pwm, int in1, int in2)
 { //setting up motor
   analogWrite(pwm, pwmVal);
-  if (dir == 1)
+  if (dir1 == 1)
   {
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
   }
-  else if (dir == -1)
+  else if (dir1 == -1)
   {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
@@ -212,16 +175,49 @@ void setMotor(int dir, int pwmVal, int pwm, int in1, int in2)
   }
 }
 
-void readEncoder()
+void setMotor2 (int dir2, int pwmVal, int pwm, int in3, int in4)
+{ //setting up motor
+  analogWrite(pwm, pwmVal);
+  if (dir2 == 1)
+  {
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+  }
+  else if (dir2 == -1)
+  {
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+  }
+  else
+  {
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+  }
+}
+
+void readEncoder1()
 {
   int b = digitalRead(ENCB);
   if (b > 0)
   {
-    posi++;
+    posi1++;
   }
   else
   {
-    posi--;
+    posi1--;
+  }
+}
+
+void readEncoder2()
+{
+  int a = digitalRead(ENCD);
+  if (a > 0)
+  {
+    posi2++;
+  }
+  else
+  {
+    posi2--;
   }
 }
 
@@ -252,12 +248,17 @@ void setup()
 
   pinMode(ENCA, INPUT);
   pinMode(ENCB, INPUT);
-  attachInterrupt(digitalPinToInterrupt(ENCA), readEncoder, RISING);
+  attachInterrupt(digitalPinToInterrupt(ENCA), readEncoder1, RISING);
+  pinMode(ENCC, INPUT);
+  pinMode(ENCD, INPUT);
+  attachInterrupt(digitalPinToInterrupt(ENCC), readEncoder2, RISING);
 
   pinMode(PWM, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
-  pinMode(ANALOGPOS, OUTPUT);
+  pinMode(PWM1, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
 
   // initialize the LED pin as an output.
   pinMode(led, OUTPUT);
@@ -380,8 +381,6 @@ void setup()
     }
   }
 
- 
-
 }
 
 void loop()
@@ -443,36 +442,55 @@ void loop()
   int forcesum = flexsorSensorMapped - ((extensorSensorMapped ) + fingertipsensormapped);
 
 
-  int unmappedpos = 0;
+  int unmappedpos1 = 0;
+  int unmappedpos2 = 0;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
   {
-    unmappedpos = posi;
+    unmappedpos1 = posi1;
+    unmappedpos2 = posi2;
   }
 
   //motor power option 2 (always set at max speed)
-  long pwr = 255;
+  long pwr1 = 255;
+  long pwr2 = 255;
 
-  int pos = map(unmappedpos, 0, 2527, 0, 180);
+  int pos1 = map(unmappedpos1, 0, 2527, 0, 180);
 
-  int dir = 0;
-  if ((pos <= (forcesum + 14)) && (pos >= (forcesum - 14)))
+  int dir1 = 0;
+  if ((pos1 <= (forcesum + 14)) && (pos1 >= (forcesum - 14)))
   {
-    dir = 0;
-    pwr = 0;
+    dir1 = 0;
+    pwr1 = 0;
   }
-  else if (pos < forcesum)
+  else if (pos1 < forcesum)
   {
-    dir = -1;
+    dir1 = -1;
   }
-  else if (pos > forcesum)
+  else if (pos1 > forcesum)
   {
-    dir = 1;
+    dir1 = 1;
+  }
+
+  int pos2 = map(unmappedpos2, 0, 2527, 0, 180);
+
+  int dir2 = 0;
+  if ((pos2 <= (forcesum + 14)) && (pos2 >= (forcesum - 14)))
+  {
+    dir2 = 0;
+    pwr2 = 0;
+  }
+  else if (pos2 < forcesum)
+  {
+    dir2 = -1;
+  }
+  else if (pos2 > forcesum)
+  {
+    dir2 = 1;
   }
 
   // signal the motor
-  setMotor(dir, pwr, PWM, IN1, IN2);
-
-  int analogPosition = analogRead(ANALOGPOS);
+  setMotor1(dir1, pwr1, PWM, IN1, IN2);
+  setMotor2(dir2, pwr2, PWM1, IN3, IN4);
 
   uint32_t elapsedTime = millis();
   if ((elapsedTime % 75) == 0)
@@ -494,12 +512,14 @@ void loop()
     Serial.println(fingertipsensormapped);
     Serial.print("Sum of Forces: ");
     Serial.println(forcesum);
-    Serial.print("Position: ");
-    Serial.println(pos);
-    Serial.print("Direction: ");
-    Serial.print(dir);
+    Serial.print("Bottom Position: ");
+    Serial.println(pos1);
+    Serial.print("Bottom Direction: ");
+    Serial.print(dir1);
+    Serial.print("Top Position: ");
+    Serial.println(pos2);
+    Serial.print("Top Direction: ");
+    Serial.print(dir2);
     Serial.println(" ");
-    Serial.print("Analog Position: ");
-    Serial.println(analogPosition);
    }
 }
