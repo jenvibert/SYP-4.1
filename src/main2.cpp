@@ -13,8 +13,7 @@ using namespace std;
 #define PWM1 5
 #define IN1 15
 #define IN2 14
-#define IN3 41
-#define IN4 40
+
 
 
 int deviceArray[24][3] = {0};
@@ -175,23 +174,23 @@ void setMotor1 (int dir1, int pwmVal, int pwm, int in1, int in2)
   }
 }
 
-void setMotor2 (int dir2, int pwmVal, int pwm, int in3, int in4)
+void setMotor2 (int dir2, int pwmVal, int pwm, int in1, int in2)
 { //setting up motor
   analogWrite(pwm, pwmVal);
   if (dir2 == 1)
   {
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
   }
   else if (dir2 == -1)
   {
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
   }
   else
   {
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, LOW);
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
   }
 }
 
@@ -257,8 +256,7 @@ void setup()
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(PWM1, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
+  
 
   // initialize the LED pin as an output.
   pinMode(led, OUTPUT);
@@ -443,12 +441,17 @@ void loop()
 
 
   int unmappedpos1 = 0;
-  int unmappedpos2 = 0;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
   {
     unmappedpos1 = posi1;
+  }
+
+  int unmappedpos2 = 0;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  {
     unmappedpos2 = posi2;
   }
+
 
   //motor power option 2 (always set at max speed)
   long pwr1 = 255;
@@ -490,7 +493,7 @@ void loop()
 
   // signal the motor
   setMotor1(dir1, pwr1, PWM, IN1, IN2);
-  setMotor2(dir2, pwr2, PWM1, IN3, IN4);
+  setMotor2(dir2, pwr2, PWM1, IN1, IN2);
 
   uint32_t elapsedTime = millis();
   if ((elapsedTime % 75) == 0)
@@ -515,11 +518,11 @@ void loop()
     Serial.print("Bottom Position: ");
     Serial.println(pos1);
     Serial.print("Bottom Direction: ");
-    Serial.print(dir1);
+    Serial.println(dir1);
     Serial.print("Top Position: ");
     Serial.println(pos2);
     Serial.print("Top Direction: ");
-    Serial.print(dir2);
+    Serial.println(dir2);
     Serial.println(" ");
    }
 }
