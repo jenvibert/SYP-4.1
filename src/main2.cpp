@@ -7,8 +7,8 @@ using namespace std;
 
 #define ENCA 21
 #define ENCB 20
-#define ENCC 22
-#define ENCD 23
+#define ENCC 23
+#define ENCD 22
 #define PWM 4
 #define PWM1 5
 #define IN1 15
@@ -460,7 +460,7 @@ void loop()
   int pos1 = map(unmappedpos1, 0, 2527, 0, 180);
 
   int dir1 = 0;
-  if ((pos1 <= (forcesum + 14)) && (pos1 >= (forcesum - 14)))
+  if ((pos1 <= (forcesum + 20)) && (pos1 >= (forcesum - 20)))
   {
     dir1 = 0;
     pwr1 = 0;
@@ -477,7 +477,7 @@ void loop()
   int pos2 = map(unmappedpos2, 0, 2527, 0, 180);
 
   int dir2 = 0;
-  if ((pos2 <= (forcesum + 14)) && (pos2 >= (forcesum - 14)))
+  if ((pos2 <= (forcesum + 20)) && (pos2 >= (forcesum - 20)))
   {
     dir2 = 0;
     pwr2 = 0;
