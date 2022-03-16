@@ -16,6 +16,7 @@
 //keep track of elasped time for power off sequence
 elapsedMillis timeElapsed;
 
+// Ben why is this here
 time_t getTeensy3Time() {
   return Teensy3Clock.get();
 }
