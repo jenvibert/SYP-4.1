@@ -2,7 +2,7 @@
 #include "Wire.h"
 
 #define TCAADDR 0x70
-#define TCAADDR 0x72
+#define TCAADDR1 0x72
 
 void tcaselect(uint8_t i) {
   if (i > 7) return;
@@ -10,7 +10,7 @@ void tcaselect(uint8_t i) {
   Wire.beginTransmission(TCAADDR);
   Wire.write(1 << i);
   Wire.endTransmission();  
-  Wire1.beginTransmission(TCAADDR);
+  Wire1.beginTransmission(TCAADDR1);
   Wire1.write(1 << i);
   Wire1.endTransmission();
 }
@@ -39,12 +39,16 @@ void setup()
         if (!Wire.endTransmission()) {
           Serial.print("Found I2C 0x");  Serial.println(addr,HEX);
         }
+      }
+      
+      for (uint8_t addr = 0; addr<=127; addr++) {
+        if (addr == TCAADDR1) continue;
 
         Wire1.beginTransmission(addr);
         if (!Wire1.endTransmission()) {
           Serial.print("Found I2C 0x");  Serial.println(addr,HEX);
         }
-      }
+
     }
     Serial.println("\ndone");
 }
