@@ -3,6 +3,10 @@
 		{
 			"name": "SYP-4.1",
 			"path": ".."
+		},
+		{
+			"name": "MUXTEST",
+			"path": "C:\\Users\\benja\\OneDrive\\Documents\\PlatformIO\\Projects\\MUXTEST"
 		}
 	],
 	"settings": {}
