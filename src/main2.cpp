@@ -3,7 +3,6 @@
 #include <Wire.h>
 #include <util/atomic.h> // For the ATOMIC_BLOCK macro
 #include <ctime>
-#include "Mux.cpp"
 using namespace std;
 
 #define ENCA 21
@@ -14,7 +13,6 @@ using namespace std;
 #define PWM1 5
 #define IN1 15
 #define IN2 14
-
 
 
 
@@ -79,7 +77,6 @@ float getReadingFromFDCwithAddressAndBus(TwoWire &bus, int addr, int capdac, int
         capdac--;
     }
 
-    // what does this do here?
     deviceArray[i][2] = capdac;
 
     return capacitance;
@@ -91,51 +88,51 @@ float getReadingFromFDCwithAddressAndBus(TwoWire &bus, int addr, int capdac, int
 }
 
 // I2C Scanner to retrieve all device ids
-// int I2Cscanner(TwoWire &I2CBus, int busID)
-// {
-//   byte error, address;
-//   int nDevices = 0;
+int I2Cscanner(TwoWire &I2CBus, int busID)
+{
+  byte error, address;
+  int nDevices = 0;
 
-//   for (address = 1; address < 127; address++) // loop through all I2C addresses
-//   {
-//     I2CBus.beginTransmission(address);
-//     error = I2CBus.endTransmission();
+  for (address = 1; address < 127; address++) // loop through all I2C addresses
+  {
+    I2CBus.beginTransmission(address);
+    error = I2CBus.endTransmission();
 
-//     if (error == 0) // if no I2C errors at the searched address, a device was found.
-//     {
-//       // a device was found at this address without any errors. now read it again and see what the devID and manID is to make sure its a sensor.
-//       Serial.print("current address:");
-//       Serial.println(address, HEX);
-//       uint16_t devID = FDC.getDeviceID(I2CBus, address);
+    if (error == 0) // if no I2C errors at the searched address, a device was found.
+    {
+      // a device was found at this address without any errors. now read it again and see what the devID and manID is to make sure its a sensor.
+      Serial.print("current address:");
+      Serial.println(address, HEX);
+      uint16_t devID = FDC.getDeviceID(I2CBus, address);
 
-//       if (devID == 0x1004)
-//       {
-//         int i;
-//         for (i = 0; i < 24; i++)
-//         {
-//           if (deviceArray[i][0] == 0) // if the deviceArray address is zero, add a sensor into the array at that index. this should add sensors in order.
-//           {
-//             deviceArray[i][0] = address;
-//             deviceArray[i][1] = busID;
-//             break;
-//           }
-//         }
-//         nDevices++;
-//       }
-//     }
-//     else if (error == 4)
-//     {
+      if (devID == 0x1004)
+      {
+        int i;
+        for (i = 0; i < 24; i++)
+        {
+          if (deviceArray[i][0] == 0) // if the deviceArray address is zero, add a sensor into the array at that index. this should add sensors in order.
+          {
+            deviceArray[i][0] = address;
+            deviceArray[i][1] = busID;
+            break;
+          }
+        }
+        nDevices++;
+      }
+    }
+    else if (error == 4)
+    {
 
-//       Serial.print(F("Unknown error at address 0x"));
-//       if (address < 16)
-//       {
-//         Serial.print("0");
-//       }
-//       Serial.println(address, HEX);
-//     }
-//   }
-//   return nDevices;
-// }
+      Serial.print(F("Unknown error at address 0x"));
+      if (address < 16)
+      {
+        Serial.print("0");
+      }
+      Serial.println(address, HEX);
+    }
+  }
+  return nDevices;
+}
 
 void clearInputBuffer()
 {
@@ -244,69 +241,6 @@ float avgSensorOutput(TwoWire &bus, int sampleCount, int sensorindex)
   return avgForce;
 }
 
-void MuxSetup()
-{
-  while (!Serial)
-    ;
-  delay(1000);
-
-  Wire.begin();
-  Wire1.begin();
-
-  Serial.begin(115200);
-  Serial.println("\nTCAScanner ready!");
-
-  for (uint8_t t = 0; t < 8; t++)
-  {
-    tcaselect(t);
-    Serial.print("TCA Port #");
-    Serial.println(t);
-
-    for (uint8_t addr = 0; addr <= 127; addr++)
-    {
-      if (addr == TCAADDR)
-        continue;
-
-      Wire.beginTransmission(addr);
-      if (!Wire.endTransmission())
-      {
-        Serial.print("Found I2C 0x");
-        Serial.println(addr, HEX);
-        uint16_t devID = FDC.getDeviceID(Wire, addr);
-
-        if (devID == 0x1004)
-        {
-          for (int i = 0; i < 8; i++)
-          {
-            if (deviceArray[i][0] == 0) // if the deviceArray address is zero, add a sensor into the array at that index. this should add sensors in order.
-            {
-              deviceArray[i][0] = addr;
-              deviceArray[i][1] = i;
-              break;
-            }
-          }
-          // nDevices++;
-        }
-      }
-    }
-
-    //   for (uint8_t addr = 0; addr <= 127; addr++)
-    //   {
-    //     if (addr == TCAADDR1)
-    //       continue;
-
-    //     Wire1.beginTransmission(addr);
-    //     if (!Wire1.endTransmission())
-    //     {
-    //       Serial.print("Found I2C 0x");
-    //       Serial.println(addr, HEX);
-    //     }
-    //   }
-    //   Serial.println("\ndone");
-    // }
-  }
-}
-
 void setup()
 {
   // delay(2500);
@@ -333,23 +267,13 @@ void setup()
   Serial.setTimeout(5);
 
   // I2C Bus init
-  for (int i = 0; i < 16; i++)
-  {
-    tcaselect(i);
-    Wire.begin();
-  }
-  // Wire.begin();
-  // Wire1.begin();
-  // Wire2.begin();
+  Wire.begin();
+  Wire1.begin();
+  Wire2.begin();
 
-  for (int i = 0; i < 16; i++)
-  {
-    tcaselect(i);
-    Wire.setClock(400_000);
-  }
-  // Wire.setClock(400000);
-  // Wire1.setClock(400000);
-  // Wire2.setClock(400000);
+  Wire.setClock(400000);
+  Wire1.setClock(400000);
+  Wire2.setClock(400000);
 
   delay(500);
 
@@ -374,11 +298,9 @@ void setup()
       deviceArray[j][1] = 0;
     }
 
-
-    MuxSetup();
-    // int sensorsBusOne = I2Cscanner(Wire, 0); //setting up first bus for I2C
-    // int sensorsBusTwo = I2Cscanner(Wire1, 1); //setting up second bus for I2C
-    // int sensorBusThree = I2Cscanner(Wire2, 2);
+    int sensorsBusOne = I2Cscanner(Wire, 0); //setting up first bus for I2C
+    int sensorsBusTwo = I2Cscanner(Wire1, 1); //setting up second bus for I2C
+    int sensorBusThree = I2Cscanner(Wire2, 2);
 
     numberOfSensors = sensorsBusOne + sensorsBusTwo + sensorBusThree;
     sensorCount = numberOfSensors; // store number of sensors detected in a global variable so you dont have to keep counting number of sensors in main loop (per previous code)
@@ -394,7 +316,7 @@ void setup()
   {
     Serial.print("i2c address: ");
     Serial.println(deviceArray[x][0]);
-    Serial.print("bus: "); 
+    Serial.print("bus: ");
     Serial.println(deviceArray[x][1]);
   }
 
@@ -466,25 +388,16 @@ void loop()
   for (int i = 0; i < sensorCount; i++)
   {
 
-    tcaselect(i);
-
     int addr = deviceArray[i][0]; // get the I2C address
-    int bus = deviceArray[i][1]; // the wire
+    int bus = deviceArray[i][1];
     int capdac = deviceArray[i][2]; // get the capdac value
 
-    configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac);
-    // for (int i = 0; i < 16; i++)
-    // {
-    //   // tcaselect(i);
-    //   configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac);
-    // }
-
-    // if (bus == 0)
-    //   configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac);
-    // else if (bus == 1)
-    //   configureMeasurementonFDCwithAddressAndBus(Wire1, addr, capdac);
-    // else if (bus == 2)
-    //   configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac);
+    if (bus == 0)
+      configureMeasurementonFDCwithAddressAndBus(Wire, addr, capdac);
+    else if (bus == 1)
+      configureMeasurementonFDCwithAddressAndBus(Wire1, addr, capdac);
+    else if (bus == 2)
+      configureMeasurementonFDCwithAddressAndBus(Wire2, addr, capdac);
   }
 
   delay(3); // delay 3 ms to let FDC capture data
@@ -492,31 +405,18 @@ void loop()
   for (int i = 0; i < sensorCount; i++)
   {
 
-    tcaselect(i);
-
     int addr = deviceArray[i][0]; // get the I2C address
     int bus = deviceArray[i][1];
     int capdac = deviceArray[i][2]; // get the capdac value
 
     long cap = 0;
-
-    if (i < 8)
-    {
+    // configure measurement at specified address and bus from device ID
+    if (bus == 0)
       cap = getReadingFromFDCwithAddressAndBus(Wire, addr, capdac, i);
-    }
-    else
-    {
+    else if (bus == 1)
       cap = getReadingFromFDCwithAddressAndBus(Wire1, addr, capdac, i);
-    }
-
-
-    // // configure measurement at specified address and bus from device ID
-    // if (bus == 0)
-    //   cap = getReadingFromFDCwithAddressAndBus(Wire, addr, capdac, i);
-    // else if (bus == 1)
-    //   cap = getReadingFromFDCwithAddressAndBus(Wire1, addr, capdac, i);
-    // else if (bus == 2)
-    //   cap = getReadingFromFDCwithAddressAndBus(Wire2, addr, capdac, i);
+    else if (bus == 2)
+      cap = getReadingFromFDCwithAddressAndBus(Wire2, addr, capdac, i);
 
     capValues[i][2] = cap;
     capValues[i][0] = addr;
