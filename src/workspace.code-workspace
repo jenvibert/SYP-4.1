@@ -9,5 +9,10 @@
 			"path": "C:\\Users\\benja\\OneDrive\\Documents\\PlatformIO\\Projects\\MUXTEST"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"string": "cpp",
+			"initializer_list": "cpp"
+		}
+	}
 }
