@@ -3,6 +3,7 @@
 Adafruit_MCP3008 adc;
 
 int count = 0;
+int MCPvalues[16] = {0}; //Array for MCP vals
 
 void setup() {
   Serial.begin(9600);
@@ -22,20 +23,15 @@ void setup() {
 
 void loop() {
    
-  int MCPvalues[16] = {0}; //Array for MCP vals
-
-
-  adc.begin(10); //begin CS to read from MCP1
+ 
   for (int i = 0; i < 8; i++)
   {  
   MCPvalues[i] = adc.readADC(i);
   Serial.print(adc.readADC(i)); Serial.print("\t")
   }
-
-  adc.begin(38); //begin CS1 to read from MCP2
-  for (int i = 8; i < 16; i++)
+  for (int i = 0; i < 8; i++)
   {    
-  MCPvalues[i] = adc.readADC(i);
+  MCPvalues[i+8] = adc.readADC(i);
   Serial.print(adc.readADC(i)); Serial.print("\t")
   }
 
